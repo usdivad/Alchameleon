@@ -34,11 +34,9 @@ function entities(req, res, output) {
     alchemyapi.entities('url')
 }
 
-function get_wiki_url(query) {
-    var search_results = get_wiki_search(query);
-    // console.log(search_results);
-    url = search_results[2];
-    // console.log(url);
+function get_wiki_url(search_results) {
+    urls = search_results[3];
+    console.log(urls);
 }
 function get_wiki_search(query) {
     console.log('searching for ' + query);
@@ -54,7 +52,8 @@ function get_wiki_search(query) {
         res.on('end', function() {
             console.log('done!');
             // console.log(results_str);
-            return JSON.parse(results_str);
+            results = JSON.parse(results_str);
+            get_wiki_url(results);
         })
     };
     
