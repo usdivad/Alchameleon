@@ -83,6 +83,7 @@ function collect(req, res, output) {
     var output = {};
     var query_raw = 'sherlock holmes';
     query_raw = req.body.who;
+    query_raw = query_raw.replace(/%20/g, ' ');
     // console.log(req);
     console.log(query_raw);
     var query = encodeURIComponent(query_raw);
@@ -122,6 +123,7 @@ function get_wiki_search(req, res, output) {
 function get_wiki_url(req, res, output) {
     search_results = output['results'];
     urls = search_results[3];
+    console.log(urls);
     // console.log(urls);
     url = urls[0];
     console.log("Wikipedia URL: " + url);
@@ -138,6 +140,7 @@ function entities(req, res, output) {
         // output['entities'] = stringify(res_entities, null, 4);
         output['protagonist'] = res_entities['entities'].shift(); //NOTE: this assumes that the 'entities' arr is sorted by descending relevance!
         output['entities'] = res_entities['entities'];
+        // output['people'] = extract_by_values(output['entities'], 'type', ['Person']);
         output['people'] = extract_by_values(output['entities'], 'type', ['Person', 'Company', 'Organization']); //corporations are people too
         output['places'] = extract_by_values(output['entities'], 'type', ['City', 'StateOrCounty', 'Country']);
         // output['organizations'] = extract_by_values(output['entities'], 'type', ['Company', 'Organization']);
@@ -199,7 +202,10 @@ function to_output(req, res, output) {
     var out_str = 'OUTPUT:<br>';
     out_str += output['query_raw'] + ': ' + output['url'] +'<br>';
     out_str += JSON.stringify(output['entities'], null, 4);
+    out_str += '    <META http-equiv="refresh" content="5;URL=game_demo.html">';
     res.send(out_str);
+
+
 
     // console.log('POSTing to game.html');
     // request.post(
@@ -254,7 +260,7 @@ function extract_by_values(list, key, values) {
 function save_image(query, object) {
     //Check if file exists (how to get extension?)
     //TODO: move away from deprecated existsSync()
-    if (fs.existsSync('public/img/'+query+'.jpg')) {
+    if (fs.existsSync('public/img/'+query.replace(/%20/g, '').replace(' ', '')+'.jpg')) {
         console.log(query + '.jpg already exists');
         object['image_link'] = 'public/img/'+query+'.jpg';
         return;
@@ -273,7 +279,7 @@ function save_image(query, object) {
             // console.log(image);
             var extension = file_extension(image['url']);
             var dir = 'public/img/';
-            var path = dir + query.replace('%20', '').replace(' ', '') + '.' + extension;
+            var path = dir + query.replace(/%20/g, '').replace(' ', '') + '.' + extension;
 
             image.writeTo(path, function() {
                 // console.log(object);

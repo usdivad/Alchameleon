@@ -59,7 +59,7 @@
 				position: fixed;
 				padding: 10px;
 				width: 3000px;
-				height: 320px;
+				height: 520px;
 				top: 0px;
 				left: 0px;
 				background: #000000;
@@ -88,6 +88,11 @@
 			</div>
 
 			<div id="hud">
+				<div id="ttl">
+					<h1>Alchameleon</h1>
+	                <i>by david su (<a href="http://usdivad.com/">http://usdivad.com/</a>)</i>
+                </div>
+                <br><br><br>
 				<div id="characterInfo"><img src="img/default.jpg" height="150"/></div>
 				<div id="objectives"></div>
 				<br>
@@ -116,7 +121,7 @@
 			function createCharacterInfo(data) {
 				var protagonist = data['protagonist'];
 				// var image_link = protagonist['image_link'].replace('public/', '');
-				var image_link = 'img/' + data['query'].replace('%20', '') + '.jpg'; //hacky
+				var image_link = 'img/' + data['query'].replace(/%20/g, '') + '.jpg'; //hacky
 				var url = data['url'];
 				var html_out = '<b>You are:</b> <a href="' + url + '" "_blank">'
 				// html_out += '' + protagonist['text'] + '';
@@ -413,8 +418,8 @@
 // vector.y = - ( vector.y * heightHalf ) + heightHalf;
 
 						// var textpos = toXYCoords(mesh.position, projector);
-						text2.style.top = mesh.position.x*2 + 'px' ;
-						text2.style.left = mesh.position.z*2+500 + 'px';
+						text2.style.top = mesh.position.z*2 + 'px' ;
+						text2.style.left = mesh.position.x*2+700 + 'px';
 						text2.style.opacity = '0.75'
 						document.body.appendChild(text2);
 
@@ -521,7 +526,60 @@
 				var idx = Math.floor(Math.random()*characters.length);
 				// var character = characters[idx];
 				var character = characters.shift();
-				return character['text'];
+				
+				// Character
+				var out = '';
+				out+= '<div onclick="postCharacter(\'' + character['text'] + '\')">' 
+				out += '<b>' + character['text'] + '</b><br>';
+
+				// Relevance
+				if (character['relevance'] > 0.75) {
+					if (character['type'] == 'Person') {
+						out += '<i>One of my best friends</i><br>';
+					}
+					else {
+						out += '<i>One of my favorite ' + character['type'].toLowerCase() + 's</i><br>';
+					}
+				}
+				else if (character['relevance'] > 0.15) {
+					if (character['type'] == 'Person') {
+						out += '<i>A good friend</i><br>';
+					}
+					else {
+						out += '<i>A good ' + character['type'].toLowerCase() + '</i><br>';
+					}				}
+				// else if (character['relevance'] > 0.25) {
+				// 	out += '<i>We get dinner now and then</i><br>';
+				// }
+				// else {
+				// 	out += '<i>Not too familiar</i><br>';
+				// }
+
+				// Picture
+				var img_link = 'img/' + character['text'].replace(' ', '').replace(/%20/g, '');
+				out += '<br><img src="' + img_link + '.jpg" width="50"/>'; 
+
+
+				// Available actions
+				if ('available_actions' in character) {
+					out += '<u>Actions:</u><br>';
+					out += character['available_actions'].join('<br>');
+				}
+				// return character['text'];
+
+				out += '</a>'
+				return out;
+			}
+
+			// Hacky post
+			function postCharacter(c) {
+				$.post(
+					'collect',
+					{'who': c},
+					function(e) {
+						console.log(e);
+						location.reload();
+				});	
 			}
 
 		</script>
