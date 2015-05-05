@@ -117,13 +117,25 @@ function entities(req, res, output) {
 }
 
 function relations(req, res, output) {
-    alchemyapi.relations('url', url, {}, function(res_relations) {
+    alchemyapi.relations('url', url, {'entities': 1}, function(res_relations) {
         output['relations'] = res_relations['relations'];
         
         console.log('Getting protagonist actions and available actions for people...');
         output['actions'] = to_protagonist_actions(output['relations'], output['protagonist'], output['people']);
         // console.log(output['protagonist']);
         // console.log(output['people']);
+
+        // Logging actions
+        console.log('My actions:');
+        console.log(output['protagonist']['actions']);
+        var other_people = output['people'];
+        for (var i=0; i<other_people; i++) {
+            other_person = other_people[i];
+            if ('available_actions' in other_person) {
+                console.log(other_person['text'] + '\'s available actions:');
+                console.log(other_person['available_actions']);
+            }
+        }
 
         console.log('Printing output...')
         to_output(req, res, output);
@@ -194,10 +206,10 @@ function to_protagonist_actions(relations_arr, protagonist, people) {
     protagonist['actions'] = [];
     for (var relations_idx=0; relations_idx<relations_arr.length; relations_idx++) {
         var relation = relations_arr[relations_idx];
-        console.log(relation);
+        // console.log(relation);
         // Ensure protagonist is subject of relation
         if ('subject' in relation && 'entities' in relation['subject']) {
-            console.log('yes subject entities');
+            // console.log('yes subject entities');
             var subject = relation['subject'];
             var subject_entities = subject['entities'];
             for (var entities_idx=0; entities_idx<subject_entities.length; entities_idx++) {
@@ -208,31 +220,38 @@ function to_protagonist_actions(relations_arr, protagonist, people) {
                     console.log(verb);
                     if (subject_entity['text'] == protagonist['text']) { //(which is better; 'text' or 'name'?)
                         if ('object' in relation) {
-                            var object_keywords = relation['object']['keywords'];
-                            var object_entities = relation['object']['entities'];
+                            var object = relation['object'];
+                            
+                            // Create protagonist actions from keywords
+                            if ('keywords' in object) {
+                                var object_keywords = object['keywords'];
 
-                            // // Create protagonist actions (many per relation)
-                            // for (var k=0; k<object_keywords.length; k++) {
-                            //     var keyword = object_keywords[k];
-                            //     protagonist['actions'].push(verb + ' ' + keyword);
-                            // }
+                                // // Many per relation
+                                // for (var k=0; k<object_keywords.length; k++) {
+                                //     var keyword = object_keywords[k];
+                                //     protagonist['actions'].push(verb + ' ' + keyword);
+                                // }
 
-                            // Create protagonist actions (just one per relation)
-                            var keyword = object_keywords[0];
-                            console.log(verb + ' ' + keyword);
-                            protagonist['actions'].push(verb + ' ' + keyword);
+                                // Just one per relation
+                                var keyword = object_keywords[0];
+                                // console.log(verb + ' ' + keyword);
+                                protagonist['actions'].push(verb + ' ' + keyword);
+                            }
 
                             // Create possible actions for people if available
-                            for (var obj_idx=0; obj_idx<object_entities.length; obj_idx++) {
-                                var object_entity = object_entities[obj_idx];
-                                for (var people_idx=0; people_idx < people.length; people_idx++) {
-                                    var person = people[people_idx];
-                                    if (object_entity['text'] == person['text']) {
-                                        if ('available_actions' in person) {
-                                            person['available_actions'].push(verb);
-                                        }
-                                        else {
-                                            person['available_actions'] = [verb];
+                            if ('entities' in object) {
+                                var object_entities = object['entities'];
+                                for (var obj_idx=0; obj_idx<object_entities.length; obj_idx++) {
+                                    var object_entity = object_entities[obj_idx];
+                                    for (var people_idx=0; people_idx < people.length; people_idx++) {
+                                        var person = people[people_idx];
+                                        if (object_entity['text'] == person['text']) {
+                                            if ('available_actions' in person) {
+                                                person['available_actions'].push(verb);
+                                            }
+                                            else {
+                                                person['available_actions'] = [verb];
+                                            }
                                         }
                                     }
                                 }
