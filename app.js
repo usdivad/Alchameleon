@@ -5,7 +5,12 @@ var app = express();
 var server = http.createServer(app);
 var port = 8000;
 // var output = {};
+var fs = require('fs');
 var bodyParser = require('body-parser');
+var gi = require('google-images');
+
+// app.use()s
+app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
@@ -26,13 +31,12 @@ server.listen(port, function() {
 });
 
 // Homepage
-app.use(express.static('public'));
 // app.get('/', home);
 app.get('game.html', home);
 app.post('/game', home);
 
 
-// Functions
+// Chained functions
 function home(req, res, output) {
     console.log('hi');
     // console.log(res);
@@ -46,8 +50,61 @@ function home(req, res, output) {
     output['query'] = query;
     // console.log(output);
     
-    console.log('Searching Wikipedia for ' + query_raw + '...');
-    get_wiki_search(req, res, output);
+    // Image testing
+    gi.search(query, function(err, images) {
+        if (images.length > 0) {
+            var image = images[0];
+            // console.log(image);
+            var extension = image['url'].split('.').pop();
+            var dir = 'public/img/';
+            var path = dir + query + '.' + extension;
+
+            image.writeTo(path, function() {
+                console.log('Wrote to %s from %s', path, image['url']);
+            });
+        }
+    })
+
+    // console.log('Searching Wikipedia for ' + query_raw + '...');
+    // get_wiki_search(req, res, output);
+}
+
+function get_wiki_search(req, res, output) {
+    query = output['query'];
+    var options = {
+        host: 'en.wikipedia.org',
+        path: '/w/api.php?action=opensearch&format=json&search=' + query
+    };
+    var results_str = ''
+    callback = function(res_search) {
+        res_search.on('data', function(chunk) {
+            results_str += chunk;
+        });
+        res_search.on('end', function() {
+            // console.log('Done searching');
+            // console.log(results_str);
+            results = JSON.parse(results_str);
+            output['results'] = results;
+            
+            console.log('Getting Wikipedia URL...');
+            get_wiki_url(req, res, output);
+        })
+    };
+    
+    http.request(options, callback).end();
+}
+
+function get_wiki_url(req, res, output) {
+    search_results = output['results'];
+    urls = search_results[3];
+    // console.log(urls);
+    url = urls[0];
+    console.log("Wikipedia URL: " + url);
+    // return url;
+    output['url'] = url;
+
+    console.log('Getting entities from AlchemyAPI...');
+    entities(req, res, output);
 }
 
 function entities(req, res, output) {
@@ -70,40 +127,33 @@ function to_output(req, res, output) {
     console.log('Done!');
 }
 
-function get_wiki_url(req, res, output) {
-    search_results = output['results'];
-    urls = search_results[3];
-    // console.log(urls);
-    url = urls[0];
-    console.log("Wikipedia URL: " + url);
-    // return url;
-    output['url'] = url;
+function get_quotes(req, res, output) {
 
-    console.log('Getting entities from AlchemyAPI...');
-    entities(req, res, output);
 }
 
-function get_wiki_search(req, res, output) {
-    query = output['query'];
-    var options = {
-        host: 'en.wikipedia.org',
-        path: '/w/api.php?action=opensearch&format=json&search=' + query
-    };
-    var results_str = ''
-    callback = function(res_search) {
-        res_search.on('data', function(chunk) {
-            results_str += chunk;
-        });
-        res_search.on('end', function() {
-            console.log('done!');
-            // console.log(results_str);
-            results = JSON.parse(results_str);
-            output['results'] = results;
-            
-            console.log('Getting Wikipedia URL...');
-            get_wiki_url(req, res, output);
-        })
-    };
-    
-    http.request(options, callback).end();
-}
+// function save_image(images) {
+//     if (images.length < 1) {
+//         console.log('No more images!');
+//         return;
+//     }
+//     else {
+//         var image = images.pop();
+//         var image_url = image['url'];
+//         var image_dir = '/img/'
+//         var image_name = img_dir + image['name'];
+//         var image_data = '';
+//         callback = function(res_image) {
+//             res_image.on('data', function(chunk) {
+//                 image_data += chunk;
+//             });
+
+//             res_image.on('end', function() {
+//                 fs.writeFile(image_name, image_data, callback = function() {
+//                     console.log('Image written to %s from %s', image_name, image_url);
+//                 });
+//                 // Recursively call for next image
+//                 save_image(images);
+//             })
+//         }
+//     }
+// }
