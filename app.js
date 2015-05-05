@@ -153,6 +153,7 @@ function to_output(req, res, output) {
 
     // Image saving
     var other_people = output['people'];
+    var max_images = 10;
     save_image(output['query']);
     for (var i=0; i<max_images; i++) {
         var person_name = other_people[i]['text'];
@@ -189,6 +190,14 @@ function extract_by_values(list, key, values) {
 
 // Google image search and save to img folder
 function save_image(query) {
+    //Check if file exists (how to get extension?)
+    //TODO: move away from deprecated existsSync()
+    if (fs.existsSync('public/img/'+query+'.jpg') || fs.existsSync('public/img/'+query+'.png')) {
+        console.log(query + '.jpg/png already exists');
+        return;
+    }
+
+    // Google image search query and construction
     gi.search(query, function(err, images) {
         if (images.length > 0) {
             var image = images[0];
