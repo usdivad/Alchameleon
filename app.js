@@ -150,10 +150,10 @@ function get_images(req, res, output) {
     // Image saving
     var other_people = output['people'];
     var max_images = 10;
-    save_image(encodURIComponent(output['protagonist']['text']));
+    save_image(encodeURIComponent(output['protagonist']['text']), output['protagonist']);
     for (var i=0; i<max_images; i++) {
         var person_name = other_people[i]['text'];
-        save_image(encodeURIComponent(person_name));
+        save_image(encodeURIComponent(person_name), other_people[i]);
     }
 
     console.log('Printing output...');
@@ -216,16 +216,24 @@ function extract_by_values(list, key, values) {
 }
 
 // Google image search and save to img folder
-function save_image(query) {
+function save_image(query, object) {
+    var cur_object = object;
     //Check if file exists (how to get extension?)
     //TODO: move away from deprecated existsSync()
-    if (fs.existsSync('public/img/'+query+'.jpg') || fs.existsSync('public/img/'+query+'.png')) {
-        console.log(query + '.jpg/png already exists');
+    if (fs.existsSync('public/img/'+query+'.jpg')) {
+        console.log(query + '.jpg already exists');
+        object['image_link'] = 'public/img/'+query+'.jpg';
+        return;
+    }
+    else if (fs.existsSync('public/img/'+query+'.png')) {
+        console.log(query + '.png already exists');
+        object['image_link'] = 'public/img/'+query+'.png';
         return;
     }
 
     // Google image search query and construction
     gi.search(query, function(err, images) {
+        cur_cur_object = cur_object;
         if (images.length > 0) {
             var image = images[0];
             // console.log(image);
@@ -235,6 +243,7 @@ function save_image(query) {
 
             image.writeTo(path, function() {
                 console.log('Wrote to %s from %s', path, image['url']);
+                cur_cur_object['image_link'] = path;
             });
         }
     });
