@@ -12,7 +12,7 @@ var port = 8000;
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var gi = require('google-images');
-var request = require('request');
+// var request = require('request');
 
 // app.use()s
 app.use(express.static('public'));
@@ -37,15 +37,15 @@ server.listen(port, function() {
 
 // Homepage
 // app.get('/', home);
-app.get('game.html', home);
-app.post('/game', home);
+// app.get('game.html', home);
+app.post('/collect', collect);
 
 
 /*
  * Chained functions for main method
  */
 
-function home(req, res, output) {
+function collect(req, res, output) {
     console.log('hi');
     // console.log(res);
     var output = {};
@@ -141,9 +141,23 @@ function relations(req, res, output) {
             }
         }
 
-        console.log('Printing output...')
-        to_output(req, res, output);
+        console.log('Saving images...');
+        get_images(req, res, output);
     });
+}
+
+function get_images(req, res, output) {
+    // Image saving
+    var other_people = output['people'];
+    var max_images = 10;
+    save_image(encodURIComponent(output['protagonist']['text']));
+    for (var i=0; i<max_images; i++) {
+        var person_name = other_people[i]['text'];
+        save_image(encodeURIComponent(person_name));
+    }
+
+    console.log('Printing output...');
+    to_output(req, res, output);
 }
 
 function to_output(req, res, output) {
@@ -152,16 +166,28 @@ function to_output(req, res, output) {
     out_str += JSON.stringify(output['entities'], null, 4);
     res.send(out_str);
 
-    // Image saving
-    var other_people = output['people'];
-    var max_images = 10;
-    save_image(output['query']);
-    for (var i=0; i<max_images; i++) {
-        var person_name = other_people[i]['text'];
-        save_image(encodeURIComponent(person_name));
-    }
+    // console.log('POSTing to game.html');
+    // request.post(
+    //     'game.html',
+    //     {form: {'data': JSON.stringify(output)}},
+    //     function(out_err, out_resp, out_body) {
+    //         if (!out_err && out_resp.statusCode == 200) {
+    //             console.log('Successful POST to game.html');
+    //         }
+    //     }
+    // );
+    
+    console.log('Writing to JSON file...');
+    fs.writeFile('public/gamedata.json', JSON.stringify(output), function(err) {
+        if (err) {
+            console.log('Error:' + err);
+        }
+        else{
+            console.log('Successful write');
+        }
+    })
 
-    console.log('Done!');
+
 }
 
 function get_quotes(req, res, output) {
