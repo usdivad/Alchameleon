@@ -102,15 +102,28 @@ function get_wiki_url(req, res, output) {
 function entities(req, res, output) {
     url = output['url'];
     alchemyapi.entities('url', url, {}, function(res_entities) {
-        // output['entities'] = JSON.stringify(res_entities, null, 4);
+        // output['entities'] = stringify(res_entities, null, 4);
         output['protagonist'] = res_entities['entities'].shift(); //NOTE: this assumes that the 'entities' arr is sorted by descending relevance!
         output['entities'] = res_entities['entities'];
-        output['people'] = extract_by_values(output['entities'], 'type', ['Person']);
+        output['people'] = extract_by_values(output['entities'], 'type', ['Person', 'Company', 'Organization']); //corporations are people too
         output['places'] = extract_by_values(output['entities'], 'type', ['City', 'StateOrCounty', 'Country']);
-        output['organizations'] = extract_by_values(output['entities'], 'type', ['Company', 'Organization']);
+        // output['organizations'] = extract_by_values(output['entities'], 'type', ['Company', 'Organization']);
         // console.log(output['entities']);
+        // console.log(output['places']);
 
-        console.log(output['places']);
+        console.log('Getting relations...');
+        relations(req, res, output);
+    });
+}
+
+function relations(req, res, output) {
+    alchemyapi.relations('url', url, {}, function(res_relations) {
+        output['relations'] = res_relations['relations'];
+        
+        console.log('Getting protagonist actions and available actions for people...');
+        output['actions'] = to_protagonist_actions(output['relations'], output['protagonist'], output['people']);
+        // console.log(output['protagonist']);
+        // console.log(output['people']);
 
         console.log('Printing output...')
         to_output(req, res, output);
@@ -123,7 +136,7 @@ function to_output(req, res, output) {
     out_str += JSON.stringify(output['entities'], null, 4);
     res.send(out_str);
 
-    save_image(output['query']);
+    // save_image(output['query']);
 
     console.log('Done!');
 }
@@ -144,7 +157,7 @@ function extract_by_values(list, key, values) {
         item = list[i];
         for (var j=0; j<values.length; j++) {
             value = values[j];
-            if (item[key] && item[key] == value) {
+            if (key in item && item[key] == value) {
                 out_list.push(item);
                 break;
             }
@@ -173,6 +186,73 @@ function save_image(query) {
 function file_extension(path) {
     return path.split('.').pop();
 }
+
+// Create actions/objectives from relations
+// TODO: split protagonist and people
+function to_protagonist_actions(relations_arr, protagonist, people) {
+    var actions = [];
+    protagonist['actions'] = [];
+    for (var relations_idx=0; relations_idx<relations_arr.length; relations_idx++) {
+        var relation = relations_arr[relations_idx];
+        console.log(relation);
+        // Ensure protagonist is subject of relation
+        if ('subject' in relation && 'entities' in relation['subject']) {
+            console.log('yes subject entities');
+            var subject = relation['subject'];
+            var subject_entities = subject['entities'];
+            for (var entities_idx=0; entities_idx<subject_entities.length; entities_idx++) {
+                var subject_entity = subject_entities[entities_idx]; //subject_entity
+                if ('action' in relation) {
+                    var verb = relation['action']['lemmatized'];
+                    verb = upper_first_char(verb);
+                    console.log(verb);
+                    if (subject_entity['text'] == protagonist['text']) { //(which is better; 'text' or 'name'?)
+                        if ('object' in relation) {
+                            var object_keywords = relation['object']['keywords'];
+                            var object_entities = relation['object']['entities'];
+
+                            // // Create protagonist actions (many per relation)
+                            // for (var k=0; k<object_keywords.length; k++) {
+                            //     var keyword = object_keywords[k];
+                            //     protagonist['actions'].push(verb + ' ' + keyword);
+                            // }
+
+                            // Create protagonist actions (just one per relation)
+                            var keyword = object_keywords[0];
+                            console.log(verb + ' ' + keyword);
+                            protagonist['actions'].push(verb + ' ' + keyword);
+
+                            // Create possible actions for people if available
+                            for (var obj_idx=0; obj_idx<object_entities.length; obj_idx++) {
+                                var object_entity = object_entities[obj_idx];
+                                for (var people_idx=0; people_idx < people.length; people_idx++) {
+                                    var person = people[people_idx];
+                                    if (object_entity['text'] == person['text']) {
+                                        if ('available_actions' in person) {
+                                            person['available_actions'].push(verb);
+                                        }
+                                        else {
+                                            person['available_actions'] = [verb];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }   
+                }
+            }
+            
+
+        }
+    }
+}
+
+function upper_first_char(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+            // See if entities subject match; then add to the entity's 'available_actions' field
+
 
 // Save image: own recursive implementation
 // function save_image(images) {
