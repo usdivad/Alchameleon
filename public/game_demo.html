@@ -89,7 +89,7 @@
 
 			<div id="hud">
 				<div id="ttl">
-					<h1>Alchameleon</h1>
+					<h1><a href='/' style="text-decoration:none">Alchameleon</a></h1>
 	                <i>by david su (<a href="http://usdivad.com/">http://usdivad.com/</a>)</i>
                 </div>
                 <br><br><br>
@@ -418,8 +418,16 @@
 // vector.y = - ( vector.y * heightHalf ) + heightHalf;
 
 						// var textpos = toXYCoords(mesh.position, projector);
-						text2.style.top = mesh.position.z*2 + 'px' ;
-						text2.style.left = mesh.position.x*2+700 + 'px';
+						
+
+						//old
+						// text2.style.top = mesh.position.z*2+100 + 'px' ;
+						// text2.style.left = mesh.position.x*2+700 + 'px';
+
+						//new
+						text2.style.top = mesh.position.y*10 + 'px';
+						text2.style.left = mesh.position.x*3+800 + 'px';
+
 						text2.style.opacity = '0.75'
 						document.body.appendChild(text2);
 
@@ -529,7 +537,7 @@
 				
 				// Character
 				var out = '';
-				out+= '<div onclick="postCharacter(\'' + character['text'] + '\')">' 
+				out+= '<a href="#" style="color:black; text-decoration:none"><div onclick="postCharacter(\'' + character['text'] + '\')">' 
 				out += '<b>' + character['text'] + '</b><br>';
 
 				// Relevance
