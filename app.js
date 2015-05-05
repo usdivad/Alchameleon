@@ -129,11 +129,14 @@ function relations(req, res, output) {
         console.log('My actions:');
         console.log(output['protagonist']['actions']);
         var other_people = output['people'];
-        for (var i=0; i<other_people; i++) {
+        for (var i=0; i<other_people.length; i++) {
             other_person = other_people[i];
-            console.log(other_person['text'] + '\'s available actions:');
             if ('available_actions' in other_person) {
+                console.log(other_person['text'] + '\'s available actions:');
                 console.log(other_person['available_actions']);
+            }
+            else {
+                console.log(other_person['text'] + ' has no available actions');
             }
         }
 
@@ -143,12 +146,18 @@ function relations(req, res, output) {
 }
 
 function to_output(req, res, output) {
-    out_str = 'OUTPUT:<br>';
+    var out_str = 'OUTPUT:<br>';
     out_str += output['query_raw'] + ': ' + output['url'] +'<br>';
     out_str += JSON.stringify(output['entities'], null, 4);
     res.send(out_str);
 
-    // save_image(output['query']);
+    // Image saving
+    var other_people = output['people'];
+    save_image(output['query']);
+    for (var i=0; i<max_images; i++) {
+        var person_name = other_people[i]['text'];
+        save_image(encodeURIComponent(person_name));
+    }
 
     console.log('Done!');
 }
@@ -251,7 +260,7 @@ function to_protagonist_actions(relations_arr, protagonist, people) {
                                     for (var people_idx=0; people_idx < people.length; people_idx++) {
                                         var person = people[people_idx];
                                         if (object_entity['text'] == person['text']) {
-                                            console.log(verb);
+                                            // console.log(verb);
                                             if ('available_actions' in person) {
                                                 person['available_actions'].push(verb);
                                             }
