@@ -4,6 +4,7 @@ var express = require('express');
 var app = express();
 var server = http.createServer(app);
 var port = 8000;
+// var output = {};
 
 // AlchemyAPI
 var AlchemyAPI = require('./alchemyapi');
@@ -23,22 +24,46 @@ app.get('/', home);
 
 
 // Functions
-function home(req, res) {
-    res.send('THUG LYFE');
+function home(req, res, output) {
+    // output = 'THUG LYFE';
     console.log('hi');
-    get_wiki_search('hollywood');
+    // console.log(res);
+    var output = {};
+    query_raw = 'sherlock holmes';
+    query = encodeURIComponent(query_raw);
+    output['query_raw'] = query_raw;
+    output['query'] = query;
+    console.log(output);
+    url = get_wiki_search(req, res, output);
+    // output += query + ': ' + url
+    // res.send(output); //goes in callback!
     // res.send('no.html');
 }
 
 function entities(req, res, output) {
-    alchemyapi.entities('url')
+    alchemyapi.entities('url');
 }
 
-function get_wiki_url(search_results) {
-    urls = search_results[3];
-    console.log(urls);
+function to_output(req, res, output) {
+    str = output['query_raw'] + ': ' + output['url'];
+    console.log(str);
+    console.log(res);
+    res.send(str);
 }
-function get_wiki_search(query) {
+
+function get_wiki_url(req, res, output) {
+    search_results = output['results'];
+    urls = search_results[3];
+    // console.log(urls);
+    url = urls[0];
+    console.log("Wikipedia URL: " + url);
+    // return url;
+    output['url'] = url;
+    to_output(req, res, output);
+}
+
+function get_wiki_search(req, res, output) {
+    query = output['query'];
     console.log('searching for ' + query);
     var options = {
         host: 'en.wikipedia.org',
@@ -53,7 +78,8 @@ function get_wiki_search(query) {
             console.log('done!');
             // console.log(results_str);
             results = JSON.parse(results_str);
-            get_wiki_url(results);
+            output['results'] = results;
+            get_wiki_url(req, res, output);
         })
     };
     
