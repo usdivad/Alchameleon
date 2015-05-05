@@ -59,7 +59,7 @@
 				position: fixed;
 				padding: 10px;
 				width: 3000px;
-				height: 300px;
+				height: 320px;
 				top: 0px;
 				left: 0px;
 				background: #000000;
@@ -76,11 +76,11 @@
 	<body>
 		<script src="js/three.min.js"></script>
 		<script src="js/PointerLockControls.js"></script>
+		<script src="js/Projector.js"></script>
 		<script src="js/jquery-1.11.3.min.js"></script>
 		<div id="blocker">
 
 			<div id="instructions">
-				<div id="location"></div>
 				<br><br>
 				<span style="font-size:40px">Click to play</span>
 				<br />
@@ -88,8 +88,11 @@
 			</div>
 
 			<div id="hud">
-				<div id="characterInfo"><img src="img/BarackObama.jpg"/></div>
+				<div id="characterInfo"><img src="img/default.jpg" height="150"/></div>
 				<div id="objectives"></div>
+				<br>
+				<div id="location"></div>
+
 			</div>
 
 		</div>
@@ -118,7 +121,7 @@
 				var html_out = '<b>You are:</b> <a href="' + url + '" "_blank">'
 				// html_out += '' + protagonist['text'] + '';
 				html_out += data['query_raw'];
-				html_out += '<br><img src="' + image_link + '" height="200"/>';
+				html_out += '<br><br><img src="' + image_link + '" height="200"/>';
 				html_out += '</a>';
 				$("#characterInfo").html(html_out);
 				console.log(image_link);
@@ -250,6 +253,7 @@
 
 				var prevTime = performance.now();
 				var velocity = new THREE.Vector3();
+				var projector = new THREE.Projector();
 
 				function init() {
 
@@ -258,8 +262,8 @@
 					scene = new THREE.Scene();
 					scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
 
-					var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
-					// var light = new THREE.HemisphereLight( getRandomColor(), getRandomColor(), 0.75 );
+					// var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
+					var light = new THREE.HemisphereLight( getRandomColor(), getRandomColor(), 0.75 );
 					light.position.set( 0.5, 1, 0.75 );
 					scene.add( light );
 
@@ -363,6 +367,10 @@
 
 					geometry = new THREE.BoxGeometry( 20, 20, 20 );
 
+					
+
+
+
 					for ( var i = 0, l = geometry.faces.length; i < l; i ++ ) {
 
 						var face = geometry.faces[ i ];
@@ -372,19 +380,43 @@
 
 					}
 
-					for ( var i = 0; i < 500; i ++ ) {
+					for ( var i = 0; i < 20; i ++ ) {
 
 						material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 
 						var mesh = new THREE.Mesh( geometry, material );
 						mesh.position.x = Math.floor( Math.random() * 20 - 10 ) * 20;
-						mesh.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
+						// mesh.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
+						mesh.position.y = Math.floor(Math.random() * 5) + 10;
 						mesh.position.z = Math.floor( Math.random() * 20 - 10 ) * 20;
 						scene.add( mesh );
 
 						material.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
 
 						objects.push( mesh );
+
+						// Object labels (adapted from http://stackoverflow.com/a/15257807/4438760)
+						// camera.updateMatrixWorld();
+						var text2 = document.createElement('div');
+						text2.style.position = 'absolute';
+						//text2.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
+						text2.style.width = 200;
+						text2.style.height = 200;
+						text2.style.backgroundColor = getRandomColor();
+						text2.innerHTML = getRandomCharacter(data);
+
+// var vector = new THREE.Vector3();
+// var projector = new THREE.Projector();
+// projector.projectVector( vector.setFromMatrixPosition(this.matrixWorld ), camera );
+
+// vector.x = ( vector.x * widthHalf ) + widthHalf;
+// vector.y = - ( vector.y * heightHalf ) + heightHalf;
+
+						// var textpos = toXYCoords(mesh.position, projector);
+						text2.style.top = mesh.position.x*2 + 'px' ;
+						text2.style.left = mesh.position.z*2+500 + 'px';
+						text2.style.opacity = '0.75'
+						document.body.appendChild(text2);
 
 					}
 
@@ -469,12 +501,27 @@
 			//from http://stackoverflow.com/a/1484514/4438760
 			function getRandomColor() {
 			    var letters = '0123456789abcdef'.split('');
-			    var color = '0x';
+			    var color = '#';
 			    for (var i = 0; i < 6; i++ ) {
 			        color += letters[Math.floor(Math.random() * 16)];
 			    }
 			    console.log(color);
 			    return color;
+			}
+
+			function toXYCoords (pos, projector) {
+			        var vector = projector.projectVector(pos.clone(), camera);
+			        vector.x = (vector.x + 1)/2 * window.innerWidth;
+			        vector.y = -(vector.y - 1)/2 * window.innerHeight;
+			        return vector;
+			}
+
+			function getRandomCharacter(data) {
+				var characters = data['people'];
+				var idx = Math.floor(Math.random()*characters.length);
+				// var character = characters[idx];
+				var character = characters.shift();
+				return character['text'];
 			}
 
 		</script>
