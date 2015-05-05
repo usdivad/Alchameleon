@@ -117,7 +117,7 @@ function entities(req, res, output) {
 }
 
 function relations(req, res, output) {
-    alchemyapi.relations('url', url, {'entities': 1}, function(res_relations) {
+    alchemyapi.relations('url', url, {'keywords': 1, 'entities': 1}, function(res_relations) {
         output['relations'] = res_relations['relations'];
         
         console.log('Getting protagonist actions and available actions for people...');
@@ -131,8 +131,8 @@ function relations(req, res, output) {
         var other_people = output['people'];
         for (var i=0; i<other_people; i++) {
             other_person = other_people[i];
+            console.log(other_person['text'] + '\'s available actions:');
             if ('available_actions' in other_person) {
-                console.log(other_person['text'] + '\'s available actions:');
                 console.log(other_person['available_actions']);
             }
         }
@@ -217,25 +217,30 @@ function to_protagonist_actions(relations_arr, protagonist, people) {
                 if ('action' in relation) {
                     var verb = relation['action']['lemmatized'];
                     verb = upper_first_char(verb);
-                    console.log(verb);
+                    // console.log(verb);
+                    // console.log('%s vs. %s', subject_entity['text'], protagonist['text']);
                     if (subject_entity['text'] == protagonist['text']) { //(which is better; 'text' or 'name'?)
+                        // console.log('subject entity matches protagonist');
                         if ('object' in relation) {
+                            // console.log('yes object');
                             var object = relation['object'];
                             
                             // Create protagonist actions from keywords
                             if ('keywords' in object) {
+                                // console.log('yes keywords');
                                 var object_keywords = object['keywords'];
 
                                 // // Many per relation
                                 // for (var k=0; k<object_keywords.length; k++) {
-                                //     var keyword = object_keywords[k];
+                                //     var keyword = object_keywords[k]['text'];
                                 //     protagonist['actions'].push(verb + ' ' + keyword);
                                 // }
 
                                 // Just one per relation
-                                var keyword = object_keywords[0];
+                                var keyword = object_keywords[0]['text'];
                                 // console.log(verb + ' ' + keyword);
                                 protagonist['actions'].push(verb + ' ' + keyword);
+                                // console.log(protagonist['actions']);
                             }
 
                             // Create possible actions for people if available
@@ -246,6 +251,7 @@ function to_protagonist_actions(relations_arr, protagonist, people) {
                                     for (var people_idx=0; people_idx < people.length; people_idx++) {
                                         var person = people[people_idx];
                                         if (object_entity['text'] == person['text']) {
+                                            console.log(verb);
                                             if ('available_actions' in person) {
                                                 person['available_actions'].push(verb);
                                             }
