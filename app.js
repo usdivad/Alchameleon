@@ -103,8 +103,14 @@ function entities(req, res, output) {
     url = output['url'];
     alchemyapi.entities('url', url, {}, function(res_entities) {
         // output['entities'] = JSON.stringify(res_entities, null, 4);
+        output['protagonist'] = res_entities['entities'].shift(); //NOTE: this assumes that the 'entities' arr is sorted by descending relevance!
         output['entities'] = res_entities['entities'];
+        output['people'] = extract_by_values(output['entities'], 'type', ['Person']);
+        output['places'] = extract_by_values(output['entities'], 'type', ['City', 'StateOrCounty', 'Country']);
+        output['organizations'] = extract_by_values(output['entities'], 'type', ['Company', 'Organization']);
         // console.log(output['entities']);
+
+        console.log(output['places']);
 
         console.log('Printing output...')
         to_output(req, res, output);
@@ -130,6 +136,22 @@ function get_quotes(req, res, output) {
 /*
  * Utility functions
  */
+
+// Extract objects from a list by possible values for key
+function extract_by_values(list, key, values) {
+    out_list = [];
+    for (var i=0; i<list.length; i++) {
+        item = list[i];
+        for (var j=0; j<values.length; j++) {
+            value = values[j];
+            if (item[key] && item[key] == value) {
+                out_list.push(item);
+                break;
+            }
+        }
+    }
+    return out_list;
+}
 
 // Google image search and save to img folder
 function save_image(query) {
