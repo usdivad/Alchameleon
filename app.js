@@ -13,15 +13,43 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var gi = require('google-images');
 // var request = require('request');
+var path = require('path');
 
 // app.use()s
 app.use(express.static('public'));
+app.use('/public', express.static('/public'));
+// app.use('/img', express.static('/public/img/'));
+app.get('/img/*', function(req, res) {
+    console.log('image');
+    console.log(req.url);
+    res.sendFile(req.url);
+
+});
+
+// app.use('/public', express.static(__dirname + '/public'));
+// app.use('/public', express.static(__dirname + '/public'));
+// app.use('/img', express.static(path.join(__dirname, 'public/img')));
+// app.use('/js', express.static(path.join(__dirname, 'public/js')));
+
+// app.get('/img/*', function(req, res){
+//     // var root_path = 'localhost:' + port;
+//     // var imgpth = req.url, img = root_path + imgpth;
+//     // res.sendFile(img);
+
+//     console.log('img');
+//     console.log(req);
+
+//     res.sendFile('localhost:8000');
+// });
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(express.json());
 app.use(express.urlencoded());
+
+
 
 // AlchemyAPI
 var AlchemyAPI = require('./alchemyapi');
@@ -35,11 +63,15 @@ server.listen(port, function() {
     console.log('Express server listening at http://%s:%s', host, port);
 });
 
+
+
 // Homepage
 // app.get('/', home);
 // app.get('game.html', home);
 app.post('/collect', collect);
-
+// app.get('/public/img/*', function(req, res) {
+//     res.send('public/img/')
+// })
 
 /*
  * Chained functions for main method
@@ -150,6 +182,7 @@ function get_images(req, res, output) {
     // Image saving
     var other_people = output['people'];
     var max_images = 10;
+
     save_image(encodeURIComponent(output['protagonist']['text']), output['protagonist']);
     for (var i=0; i<max_images; i++) {
         var person_name = other_people[i]['text'];
@@ -217,7 +250,6 @@ function extract_by_values(list, key, values) {
 
 // Google image search and save to img folder
 function save_image(query, object) {
-    var cur_object = object;
     //Check if file exists (how to get extension?)
     //TODO: move away from deprecated existsSync()
     if (fs.existsSync('public/img/'+query+'.jpg')) {
@@ -233,7 +265,7 @@ function save_image(query, object) {
 
     // Google image search query and construction
     gi.search(query, function(err, images) {
-        cur_cur_object = cur_object;
+        // console.log(object);
         if (images.length > 0) {
             var image = images[0];
             // console.log(image);
@@ -242,8 +274,10 @@ function save_image(query, object) {
             var path = dir + query + '.' + extension;
 
             image.writeTo(path, function() {
+                // console.log(object);
                 console.log('Wrote to %s from %s', path, image['url']);
-                cur_cur_object['image_link'] = path;
+                object['image_link'] = path;
+                console.log(object);
             });
         }
     });
