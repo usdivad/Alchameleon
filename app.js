@@ -45,10 +45,9 @@ function entities(req, res, output) {
 }
 
 function to_output(req, res, output) {
-    str = output['query_raw'] + ': ' + output['url'];
-    console.log(str);
-    console.log(res);
-    res.send(str);
+    out_str = output['query_raw'] + ': ' + output['url'];
+    console.log(out_str);
+    res.send(out_str);
 }
 
 function get_wiki_url(req, res, output) {
@@ -70,11 +69,11 @@ function get_wiki_search(req, res, output) {
         path: '/w/api.php?action=opensearch&format=json&search=' + query
     };
     var results_str = ''
-    callback = function(res) {
-        res.on('data', function(chunk) {
+    callback = function(res_search) {
+        res_search.on('data', function(chunk) {
             results_str += chunk;
         });
-        res.on('end', function() {
+        res_search.on('end', function() {
             console.log('done!');
             // console.log(results_str);
             results = JSON.parse(results_str);
