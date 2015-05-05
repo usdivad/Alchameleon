@@ -5,6 +5,13 @@ var app = express();
 var server = http.createServer(app);
 var port = 8000;
 // var output = {};
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(express.json());
+app.use(express.urlencoded());
 
 // AlchemyAPI
 var AlchemyAPI = require('./alchemyapi');
@@ -20,24 +27,26 @@ server.listen(port, function() {
 
 // Homepage
 app.use(express.static('public'));
-app.get('/', home);
+// app.get('/', home);
+app.get('game.html', home);
+app.post('/game', home);
 
 
 // Functions
 function home(req, res, output) {
-    // output = 'THUG LYFE';
     console.log('hi');
     // console.log(res);
     var output = {};
-    query_raw = 'sherlock holmes';
-    query = encodeURIComponent(query_raw);
+    var query_raw = 'sherlock holmes';
+    query_raw = req.body.who;
+    console.log(req);
+    console.log(query_raw);
+    var query = encodeURIComponent(query_raw);
     output['query_raw'] = query_raw;
     output['query'] = query;
     console.log(output);
-    url = get_wiki_search(req, res, output);
-    // output += query + ': ' + url
-    // res.send(output); //goes in callback!
-    // res.send('no.html');
+    
+    get_wiki_search(req, res, output);
 }
 
 function entities(req, res, output) {
