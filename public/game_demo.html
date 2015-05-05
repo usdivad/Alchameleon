@@ -67,6 +67,10 @@
 				opacity: 0.7;
 			}
 
+			a, a:hover, a:visited {
+				color: #ffffff;
+			}
+
 		</style>
 	</head>
 	<body>
@@ -76,40 +80,45 @@
 		<div id="blocker">
 
 			<div id="instructions">
+				<div id="location"></div>
+				<br><br>
 				<span style="font-size:40px">Click to play</span>
 				<br />
 				(W, A, S, D = Move, SPACE = Jump, MOUSE = Look around)
 			</div>
 
 			<div id="hud">
-				<div id="characterInfo"></div>
+				<div id="characterInfo"><img src="img/BarackObama.jpg"/></div>
 				<div id="objectives"></div>
 			</div>
 
 		</div>
 
 		<script>
-			var outer_data = {}
+			var loaded_data = {};
 
 			$.getJSON('gamedata.json', function(data) {
-				outer_data = data;
+				loaded_data = data;
 				console.log(data);
 				createCharacterInfo(data);
+				createLocation(data);
 				createNewObjective(data);
-				createScene();
+				createScene(data);
 			});
 
 			$("#objectives").on('click', function() {
-				createNewObjective(outer_data);
+				createNewObjective(loaded_data);
 			})
 
 			function createCharacterInfo(data) {
 				var protagonist = data['protagonist'];
-				var image_link = protagonist['image_link'];
+				// var image_link = protagonist['image_link'].replace('public/', '');
+				var image_link = 'img/' + data['query'].replace('%20', '') + '.jpg'; //hacky
 				var url = data['url'];
 				var html_out = '<b>You are:</b> <a href="' + url + '" "_blank">'
-				html_out += '' + protagonist['text'] + '';
-				html_out += '<br><img src="' + image_link + '"/>';
+				// html_out += '' + protagonist['text'] + '';
+				html_out += data['query_raw'];
+				html_out += '<br><img src="' + image_link + '" height="200"/>';
 				html_out += '</a>';
 				$("#characterInfo").html(html_out);
 				console.log(image_link);
@@ -118,11 +127,17 @@
 			function createNewObjective(data) {
 				var objectives = data['protagonist']['actions'];
 				var idx = Math.floor(Math.random() * objectives.length);
-				$("#objectives").html('<b>Your objective:</b> ' + objectives[idx]);
+				$("#objectives").html('<br><b>Your objective:</b> ' + objectives[idx]);
 
 			}
 
-			function createScene() {
+			function createLocation(data) {
+				var locations = data['places'];
+				var idx = Math.floor(Math.random()*locations.length);
+				$("#location").text('Welcome to ' + locations[idx]['text'] + '!');
+			}
+
+			function createScene(data) {
 
 				var camera, scene, renderer;
 				var geometry, material, mesh;
@@ -244,6 +259,7 @@
 					scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
 
 					var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
+					// var light = new THREE.HemisphereLight( getRandomColor(), getRandomColor(), 0.75 );
 					light.position.set( 0.5, 1, 0.75 );
 					scene.add( light );
 
@@ -448,6 +464,18 @@
 
 				}
 			} //end createScene
+
+
+			//from http://stackoverflow.com/a/1484514/4438760
+			function getRandomColor() {
+			    var letters = '0123456789abcdef'.split('');
+			    var color = '0x';
+			    for (var i = 0; i < 6; i++ ) {
+			        color += letters[Math.floor(Math.random() * 16)];
+			    }
+			    console.log(color);
+			    return color;
+			}
 
 		</script>
 	</body>

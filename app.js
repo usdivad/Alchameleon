@@ -17,14 +17,14 @@ var path = require('path');
 
 // app.use()s
 app.use(express.static('public'));
-app.use('/public', express.static('/public'));
-// app.use('/img', express.static('/public/img/'));
-app.get('/img/*', function(req, res) {
-    console.log('image');
-    console.log(req.url);
-    res.sendFile(req.url);
+// app.use('/public', express.static('/public'));
+// // app.use('/img', express.static('/public/img/'));
+// app.get('/img/*', function(req, res) {
+//     console.log('image');
+//     console.log(req.url);
+//     // res.sendFile(req.url);
 
-});
+// });
 
 // app.use('/public', express.static(__dirname + '/public'));
 // app.use('/public', express.static(__dirname + '/public'));
@@ -183,7 +183,9 @@ function get_images(req, res, output) {
     var other_people = output['people'];
     var max_images = 10;
 
-    save_image(encodeURIComponent(output['protagonist']['text']), output['protagonist']);
+    // save_image(encodeURIComponent(output['protagonist']['text']), output['protagonist']);
+    save_image(output['query'], output['protagonist']);
+    // 
     for (var i=0; i<max_images; i++) {
         var person_name = other_people[i]['text'];
         save_image(encodeURIComponent(person_name), other_people[i]);
@@ -271,7 +273,7 @@ function save_image(query, object) {
             // console.log(image);
             var extension = file_extension(image['url']);
             var dir = 'public/img/';
-            var path = dir + query + '.' + extension;
+            var path = dir + query.replace('%20', '').replace(' ', '') + '.' + extension;
 
             image.writeTo(path, function() {
                 // console.log(object);
