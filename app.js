@@ -12,6 +12,7 @@ var port = 8000;
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var gi = require('google-images');
+var request = require('request');
 
 // app.use()s
 app.use(express.static('public'));
