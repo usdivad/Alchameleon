@@ -1,3 +1,7 @@
+/*
+ * Setup
+ */
+
 // Initial vars for Express app and server
 var http = require('http');
 var express = require('express');
@@ -36,7 +40,10 @@ app.get('game.html', home);
 app.post('/game', home);
 
 
-// Chained functions
+/*
+ * Chained functions for main method
+ */
+
 function home(req, res, output) {
     console.log('hi');
     // console.log(res);
@@ -49,24 +56,9 @@ function home(req, res, output) {
     output['query_raw'] = query_raw;
     output['query'] = query;
     // console.log(output);
-    
-    // Image testing
-    gi.search(query, function(err, images) {
-        if (images.length > 0) {
-            var image = images[0];
-            // console.log(image);
-            var extension = image['url'].split('.').pop();
-            var dir = 'public/img/';
-            var path = dir + query + '.' + extension;
 
-            image.writeTo(path, function() {
-                console.log('Wrote to %s from %s', path, image['url']);
-            });
-        }
-    })
-
-    // console.log('Searching Wikipedia for ' + query_raw + '...');
-    // get_wiki_search(req, res, output);
+    console.log('Searching Wikipedia for ' + query_raw + '...');
+    get_wiki_search(req, res, output);
 }
 
 function get_wiki_search(req, res, output) {
@@ -110,7 +102,8 @@ function get_wiki_url(req, res, output) {
 function entities(req, res, output) {
     url = output['url'];
     alchemyapi.entities('url', url, {}, function(res_entities) {
-        output['entities'] = JSON.stringify(res_entities, null, 4);
+        // output['entities'] = JSON.stringify(res_entities, null, 4);
+        output['entities'] = res_entities['entities'];
         // console.log(output['entities']);
 
         console.log('Printing output...')
@@ -121,8 +114,10 @@ function entities(req, res, output) {
 function to_output(req, res, output) {
     out_str = 'OUTPUT:<br>';
     out_str += output['query_raw'] + ': ' + output['url'] +'<br>';
-    out_str += output['entities'];
+    out_str += JSON.stringify(output['entities'], null, 4);
     res.send(out_str);
+
+    save_image(output['query']);
 
     console.log('Done!');
 }
@@ -131,6 +126,33 @@ function get_quotes(req, res, output) {
 
 }
 
+
+/*
+ * Utility functions
+ */
+
+// Google image search and save to img folder
+function save_image(query) {
+    gi.search(query, function(err, images) {
+        if (images.length > 0) {
+            var image = images[0];
+            // console.log(image);
+            var extension = file_extension(image['url']);
+            var dir = 'public/img/';
+            var path = dir + query + '.' + extension;
+
+            image.writeTo(path, function() {
+                console.log('Wrote to %s from %s', path, image['url']);
+            });
+        }
+    });
+}
+
+function file_extension(path) {
+    return path.split('.').pop();
+}
+
+// Save image: own recursive implementation
 // function save_image(images) {
 //     if (images.length < 1) {
 //         console.log('No more images!');
