@@ -39,24 +39,35 @@ function home(req, res, output) {
     var output = {};
     var query_raw = 'sherlock holmes';
     query_raw = req.body.who;
-    console.log(req);
+    // console.log(req);
     console.log(query_raw);
     var query = encodeURIComponent(query_raw);
     output['query_raw'] = query_raw;
     output['query'] = query;
-    console.log(output);
+    // console.log(output);
     
+    console.log('Searching Wikipedia for ' + query_raw + '...');
     get_wiki_search(req, res, output);
 }
 
 function entities(req, res, output) {
-    alchemyapi.entities('url');
+    url = output['url'];
+    alchemyapi.entities('url', url, {}, function(res_entities) {
+        output['entities'] = JSON.stringify(res_entities, null, 4);
+        // console.log(output['entities']);
+
+        console.log('Printing output...')
+        to_output(req, res, output);
+    });
 }
 
 function to_output(req, res, output) {
-    out_str = output['query_raw'] + ': ' + output['url'];
-    console.log(out_str);
+    out_str = 'OUTPUT:<br>';
+    out_str += output['query_raw'] + ': ' + output['url'] +'<br>';
+    out_str += output['entities'];
     res.send(out_str);
+
+    console.log('Done!');
 }
 
 function get_wiki_url(req, res, output) {
@@ -67,12 +78,13 @@ function get_wiki_url(req, res, output) {
     console.log("Wikipedia URL: " + url);
     // return url;
     output['url'] = url;
-    to_output(req, res, output);
+
+    console.log('Getting entities from AlchemyAPI...');
+    entities(req, res, output);
 }
 
 function get_wiki_search(req, res, output) {
     query = output['query'];
-    console.log('searching for ' + query);
     var options = {
         host: 'en.wikipedia.org',
         path: '/w/api.php?action=opensearch&format=json&search=' + query
@@ -87,6 +99,8 @@ function get_wiki_search(req, res, output) {
             // console.log(results_str);
             results = JSON.parse(results_str);
             output['results'] = results;
+            
+            console.log('Getting Wikipedia URL...');
             get_wiki_url(req, res, output);
         })
     };
