@@ -16,7 +16,6 @@ var gi = require('google-images');
 var path = require('path');
 
 // app.use()s
-app.use(express.static('public'));
 // app.use('/public', express.static('/public'));
 // // app.use('/img', express.static('/public/img/'));
 // app.get('/img/*', function(req, res) {
@@ -48,7 +47,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.json());
 app.use(express.urlencoded());
-
+app.use(express.static('public')); //last in chain
 
 
 // AlchemyAPI
@@ -185,6 +184,9 @@ function get_images(req, res, output) {
     // Image saving
     var other_people = output['people'];
     var max_images = 10;
+    if (max_images > other_people.length) {
+        max_images = other_people.length;
+    }
 
     // save_image(encodeURIComponent(output['protagonist']['text']), output['protagonist']);
     save_image(output['query'], output['protagonist']);
@@ -260,16 +262,27 @@ function extract_by_values(list, key, values) {
 function save_image(query, object) {
     //Check if file exists (how to get extension?)
     //TODO: move away from deprecated existsSync()
-    if (fs.existsSync('public/img/'+query.replace(/%20/g, '').replace(' ', '')+'.jpg')) {
-        console.log(query + '.jpg already exists');
-        object['image_link'] = 'public/img/'+query+'.jpg';
-        return;
+    var formats = ['jpg', 'jpeg', 'png', 'gif'];
+    for (var i=0; i<formats.length; i++) {
+        var format = formats[i];
+        if (fs.existsSync('public/img/'+query.replace(/%20/g, '').replace(' ', '')+'.'+format)) {
+            console.log(query + '.' + format + ' already exists');
+            // object['image_link'] = 'public/img/'+query+'.'+format;
+            object['image_link'] = 'img/'+query+'.'+format;
+            return;
+        }
     }
-    else if (fs.existsSync('public/img/'+query+'.png')) {
-        console.log(query + '.png already exists');
-        object['image_link'] = 'public/img/'+query+'.png';
-        return;
-    }
+
+    // if (fs.existsSync('public/img/'+query.replace(/%20/g, '').replace(' ', '')+'.jpg')) {
+    //     console.log(query + '.jpg already exists');
+    //     object['image_link'] = 'public/img/'+query+'.jpg';
+    //     return;
+    // }
+    // else if (fs.existsSync('public/img/'+query+'.png')) {
+    //     console.log(query + '.png already exists');
+    //     object['image_link'] = 'public/img/'+query+'.png';
+    //     return;
+    // }
 
     // Google image search query and construction
     gi.search(query, function(err, images) {
@@ -277,8 +290,10 @@ function save_image(query, object) {
         if (images.length > 0) {
             var image = images[0];
             // console.log(image);
-            var extension = file_extension(image['url']);
-            var dir = 'public/img/';
+            var url = parse_image_url(image['url']);
+            var extension = file_extension(url);
+            // var dir = 'public/img/';
+            var dir = 'img/';
             var path = dir + query.replace(/%20/g, '').replace(' ', '') + '.' + extension;
 
             image.writeTo(path, function() {
@@ -370,6 +385,16 @@ function to_protagonist_actions(relations_arr, protagonist, people) {
 
 function upper_first_char(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function parse_image_url(url) {
+    // return url.replace(/(?<=\.(jpg|jpeg|png|gif)).*/gi, '');
+    var url_arr = url.match(/.*\.(jpg|jpeg|png|gif)/gi);
+    if (url_arr.length > 0) {
+        console.log(url_arr[0]);
+        return url_arr[0];
+    }
+    return url;
 }
 
             // See if entities subject match; then add to the entity's 'available_actions' field
