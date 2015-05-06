@@ -285,7 +285,7 @@ function save_image(query, object) {
                 // console.log(object);
                 console.log('Wrote to %s from %s', path, image['url']);
                 object['image_link'] = path;
-                console.log(object);
+                // console.log(object);
             });
         }
     });

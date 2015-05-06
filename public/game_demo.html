@@ -89,7 +89,7 @@
 
 			<div id="hud">
 				<div id="ttl">
-					<h1><a href='/' style="text-decoration:none">Alchameleon</a></h1>
+					<h1><a href='/' style="text-decoration:none">Alchemeleon</a></h1>
 	                <i>by david su (<a href="http://usdivad.com/">http://usdivad.com/</a>)</i>
                 </div>
                 <br><br><br>
@@ -114,8 +114,59 @@
 				createScene(data);
 			});
 
-			$("#objectives").on('click', function() {
+			$('#objectives').on('click', function() {
 				createNewObjective(loaded_data);
+			});
+
+			var mouseX = -1;
+			var mouseY = -1;
+
+			$('body').mousemove(function(event) {
+				console.log(event);
+				if (mouseX < 0 || mouseY < 0) {
+					mouseX = event.pageX;
+					mouseY = event.pageY;
+				}
+				else {
+					var dx = event.pageX - mouseX;
+					var dy = event.pageY - mouseY;
+					var mult = 0.1;
+					var speed = 0.1;
+					console.log('(%d, %d)', dx, dy);
+
+					dx = dx*mult;
+					dy = dy*mult;
+
+
+					if (dx < 0) {
+						$('.text2').animate({
+							'left': '+=' + Math.abs(dx) + 'px'
+						}, speed);
+					}
+					else {
+						$('.text2').animate({
+							'left': '-=' + Math.abs(dx) + 'px'
+						}, speed);
+					}
+
+					if (dy < 0) {
+						$('.text2').animate({
+							'top': '+=' + Math.abs(dy) + 'px'
+						}, speed);
+					}
+					else {
+						$('.text2').animate({
+							'top': '-=' + Math.abs(dy) + 'px'
+						}, speed);
+					}
+
+
+					// $('.text2').css({
+						// left: $()
+					// });
+					mouseX = event.pageX;
+					mouseY = event.pageY;
+				}
 			})
 
 			function createCharacterInfo(data) {
@@ -403,6 +454,7 @@
 						// Object labels (adapted from http://stackoverflow.com/a/15257807/4438760)
 						// camera.updateMatrixWorld();
 						var text2 = document.createElement('div');
+						text2.className = 'text2';
 						text2.style.position = 'absolute';
 						//text2.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
 						text2.style.width = 200;
@@ -410,15 +462,17 @@
 						text2.style.backgroundColor = getRandomColor();
 						text2.innerHTML = getRandomCharacter(data);
 
-// var vector = new THREE.Vector3();
-// var projector = new THREE.Projector();
-// projector.projectVector( vector.setFromMatrixPosition(this.matrixWorld ), camera );
+						// var vector = new THREE.Vector3();
+						// var projector = new THREE.Projector();
+						// projector.projectVector( vector.setFromMatrixPosition(this.matrixWorld ), camera );
 
-// vector.x = ( vector.x * widthHalf ) + widthHalf;
-// vector.y = - ( vector.y * heightHalf ) + heightHalf;
+						// vector.x = ( vector.x * widthHalf ) + widthHalf;
+						// vector.y = - ( vector.y * heightHalf ) + heightHalf;
 
 						// var textpos = toXYCoords(mesh.position, projector);
 						
+
+
 
 						//old
 						// text2.style.top = mesh.position.z*2+100 + 'px' ;
@@ -430,7 +484,6 @@
 
 						text2.style.opacity = '0.75'
 						document.body.appendChild(text2);
-
 					}
 
 					//
@@ -543,18 +596,31 @@
 				// Relevance
 				if (character['relevance'] > 0.75) {
 					if (character['type'] == 'Person') {
-						out += '<i>One of my best friends</i><br>';
+						out += '<i>One of my closest allies</i><br>';
 					}
 					else {
-						out += '<i>One of my favorite ' + character['type'].toLowerCase() + 's</i><br>';
+						out += '<i>Among my favorite ' + character['type'].toLowerCase() + 's</i><br>';
 					}
 				}
 				else if (character['relevance'] > 0.15) {
 					if (character['type'] == 'Person') {
-						out += '<i>A good friend</i><br>';
+						var dice = Math.random();
+						if (dice > 0.5) {
+							out += '<i>A good friend</i><br>';
+						}
+						else {
+							out += '<i>Occasional dinner enemy</i><br>';
+						}
+
 					}
 					else {
-						out += '<i>A good ' + character['type'].toLowerCase() + '</i><br>';
+						var dice = Math.random();
+						if (dice > 0.5) {
+							out += '<i>A familiar ' + character['type'].toLowerCase() + '</i><br>';
+						}
+						else {
+							out += '<i>' + character['type'] + '</i></br>'
+						}
 					}				}
 				// else if (character['relevance'] > 0.25) {
 				// 	out += '<i>We get dinner now and then</i><br>';
