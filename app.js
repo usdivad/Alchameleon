@@ -80,8 +80,8 @@ function collect(req, res, output) {
     console.log('hi');
     // console.log(res);
     var output = {};
-    var query_raw = 'sherlock holmes';
-    query_raw = req.body.who;
+    var query_raw = to_title_case('sherlock holmes');
+    query_raw = to_title_case(req.body.who);
     query_raw = query_raw.replace(/%20/g, ' ');
     // console.log(req);
     console.log(query_raw);
@@ -381,6 +381,14 @@ function to_protagonist_actions(relations_arr, protagonist, people) {
 
         }
     }
+}
+
+function to_title_case(str) {
+    str_arr = str.split(' ');
+    for (var i=0; i<str_arr.length; i++) {
+        str_arr[i] = upper_first_char(str_arr[i]);
+    }
+    return str_arr.join(' ');
 }
 
 function upper_first_char(str) {
