@@ -183,7 +183,7 @@ function relations(req, res, output) {
 function get_images(req, res, output) {
     // Image saving
     var other_people = output['people'];
-    var max_images = 10;
+    var max_images = 20;
     if (max_images > other_people.length) {
         max_images = other_people.length;
     }
@@ -294,7 +294,7 @@ function save_image(query, object) {
             var extension = file_extension(url);
             // var dir = 'public/img/';
             var dir = 'img/';
-            var path = dir + query.replace(/%20/g, '').replace(' ', '') + '.' + extension;
+            var path = 'public/' + dir + query.replace(/%20/g, '').replace(' ', '') + '.' + extension;
 
             image.writeTo(path, function() {
                 // console.log(object);
