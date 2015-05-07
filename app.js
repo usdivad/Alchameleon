@@ -188,26 +188,34 @@ function get_images(req, res, output) {
         max_images = other_people.length;
     }
 
-    // save_image(encodeURIComponent(output['protagonist']['text']), output['protagonist']);
-    save_image(output['query'], output['protagonist']);
-    // 
-    for (var i=0; i<max_images; i++) {
-        var person_name = other_people[i]['text'];
-        save_image(encodeURIComponent(person_name), other_people[i]);
-    }
+    // Create shallow copy
+    var images_to_save = output['people'].slice(0).reverse(); //cos max_images decrements
+    images_to_save.push(output['protagonist']);
+    var output_data = {'req': req, 'res': res, 'output': output};
+    save_image(images_to_save, max_images, to_output, output_data);
 
-    console.log('Printing output...');
-    to_output(req, res, output);
+    // // save_image(encodeURIComponent(output['protagonist']['text']), output['protagonist']);
+    // save_image(output['query'], output['protagonist']);
+    //
+    // for (var i=0; i<max_images; i++) {
+    //     var person_name = other_people[i]['text'];
+    //     save_image(encodeURIComponent(person_name), other_people[i]);
+    // }
+
+    // console.log('Printing output...');
+    // to_output(req, res, output);
 }
 
-function to_output(req, res, output) {
+function to_output(data) {
+    var req = data['req'],
+        res = data['res'],
+        output = data['output'];
+
     var out_str = 'OUTPUT:<br>';
     out_str += output['query_raw'] + ': ' + output['url'] +'<br>';
     out_str += JSON.stringify(output['entities'], null, 4);
     out_str += '    <META http-equiv="refresh" content="5;URL=game_demo.html">';
-    res.send(out_str);
-
-
+    // res.send(out_str);
 
     // console.log('POSTing to game.html');
     // request.post(
@@ -228,6 +236,8 @@ function to_output(req, res, output) {
         else{
             console.log('Successful write');
         }
+        
+        res.send(out_str);
     })
 
 
@@ -259,32 +269,33 @@ function extract_by_values(list, key, values) {
 }
 
 // Google image search and save to img folder
-function save_image(query, object_in) {
-    var object = object_in;
+function save_image(object_in, image_idx, final_callback, final_callback_data) {
+    // The base case
+    if (image_idx < 0) {
+        console.log('bottomed out save_image()');
+        final_callback(final_callback_data);
+        return;
+    }
+
+    // Otherwise
+    // console.log(object_in);
+    var object = object_in[image_idx];
+    var query = object['text'];
+    console.log('save_image iteration #%d: %s', image_idx, query);
+
     //Check if file exists (how to get extension?)
     //TODO: move away from deprecated existsSync()
-    var query_formatted = query.replace(/%20/g, '').replace(/\s+/g, '');
+    var query_formatted = format_query(query);
     var formats = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG', 'gif', 'GIF'];
     for (var i=0; i<formats.length; i++) {
         var format = formats[i];
         if (fs.existsSync('public/img/' + query_formatted + '.' + format)) {
-            console.log(query + '.' + format + ' already exists');
+            console.log(query_formatted + '.' + format + ' already exists');
             // object['image_link'] = 'public/img/'+query+'.'+format;
             object['image_link'] = 'img/' + query_formatted + '.' + format;
-            return;
+            save_image(object, image_idx-1, final_callback, final_callback_data);
         }
     }
-
-    // if (fs.existsSync('public/img/'+query.replace(/%20/g, '').replace(' ', '')+'.jpg')) {
-    //     console.log(query + '.jpg already exists');
-    //     object['image_link'] = 'public/img/'+query+'.jpg';
-    //     return;
-    // }
-    // else if (fs.existsSync('public/img/'+query+'.png')) {
-    //     console.log(query + '.png already exists');
-    //     object['image_link'] = 'public/img/'+query+'.png';
-    //     return;
-    // }
 
     // Google image search query and construction
     gi.search(query, function(err, images) {
@@ -296,14 +307,17 @@ function save_image(query, object_in) {
             var extension = file_extension(url);
             // var dir = 'public/img/';
             var dir = 'img/';
-            var image_link = dir + query.replace(/%20/g, '').replace(/\s+/g, '') + '.' + extension;
+            var image_link = dir + query_formatted + '.' + extension;
             var path = 'public/' + image_link
 
             image.writeTo(path, function() {
                 // console.log(object);
                 console.log('Wrote to %s from %s', path, image['url']);
                 object['image_link'] = image_link;
-                console.log(object);
+                // console.log(object);
+
+                //async callback
+                save_image(object_in, image_idx-1, final_callback, final_callback_data);
             });
         }
     });
@@ -384,6 +398,10 @@ function to_protagonist_actions(relations_arr, protagonist, people) {
 
         }
     }
+}
+
+function format_query(q) {
+    return q.replace(/(%20|\s+|\W+)/g, '');
 }
 
 function to_title_case(str) {
