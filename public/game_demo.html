@@ -105,10 +105,11 @@
 		<script>
 			var loaded_data = {};
 
-			$.getJSON('gamedata_obama.json', function(data) {
+			// Load data from previous collection (alchemy, wiki)
+			$.getJSON('gamedata.json', function(data) {
 				loaded_data = data;
 				console.log(data);
-				createCharacterInfo(data);
+				createProtagonistInfo(data);
 				createLocation(data);
 				createNewObjective(data);
 				createScene(data);
@@ -121,6 +122,7 @@
 			var mouseX = -1;
 			var mouseY = -1;
 
+			// Hacky mouse moving
 			$('body').mousemove(function(event) {
 				console.log(event);
 				if (mouseX < 0 || mouseY < 0) {
@@ -167,9 +169,10 @@
 					mouseX = event.pageX;
 					mouseY = event.pageY;
 				}
-			})
+			});
 
-			function createCharacterInfo(data) {
+			// HUD display info
+			function createProtagonistInfo(data) {
 				var protagonist = data['protagonist'];
 				// var image_link = protagonist['image_link'].replace('public/', '');
 				var image_link = 'img/' + data['query'].replace(/%20/g, '') + '.jpg'; //hacky
@@ -337,7 +340,8 @@
 
 							case 37: // left
 							case 65: // a
-								moveLeft = true; break;
+								moveLeft = true;
+								break;
 
 							case 40: // down
 							case 83: // s
@@ -436,7 +440,11 @@
 
 					}
 
-					for ( var i = 0; i < 20; i ++ ) {
+					// Create characters!
+					var characters = data['people'];
+					for ( var i = 0; i < characters.length; i ++ ) {
+
+						var character = characters[i];
 
 						material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 
@@ -460,7 +468,7 @@
 						text2.style.width = 200;
 						text2.style.height = 200;
 						text2.style.backgroundColor = getRandomColor();
-						text2.innerHTML = getRandomCharacter(data);
+						text2.innerHTML = createCharacterInfo(character);
 
 						// var vector = new THREE.Vector3();
 						// var projector = new THREE.Projector();
@@ -582,11 +590,12 @@
 			        return vector;
 			}
 
-			function getRandomCharacter(data) {
-				var characters = data['people'];
-				var idx = Math.floor(Math.random()*characters.length);
-				// var character = characters[idx];
-				var character = characters.shift();
+			function createCharacterInfo(character) {
+
+				// var characters = data['people'];
+				// // var idx = Math.floor(Math.random()*characters.length);
+				// // var character = characters[idx];
+				// var character = characters.shift();
 				
 				// Character
 				var out = '';
