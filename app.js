@@ -259,16 +259,18 @@ function extract_by_values(list, key, values) {
 }
 
 // Google image search and save to img folder
-function save_image(query, object) {
+function save_image(query, object_in) {
+    var object = object_in;
     //Check if file exists (how to get extension?)
     //TODO: move away from deprecated existsSync()
-    var formats = ['jpg', 'jpeg', 'png', 'gif'];
+    var query_formatted = query.replace(/%20/g, '').replace(/\s+/g, '');
+    var formats = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG', 'gif', 'GIF'];
     for (var i=0; i<formats.length; i++) {
         var format = formats[i];
-        if (fs.existsSync('public/img/'+query.replace(/%20/g, '').replace(' ', '')+'.'+format)) {
+        if (fs.existsSync('public/img/' + query_formatted + '.' + format)) {
             console.log(query + '.' + format + ' already exists');
             // object['image_link'] = 'public/img/'+query+'.'+format;
-            object['image_link'] = 'img/'+query+'.'+format;
+            object['image_link'] = 'img/' + query_formatted + '.' + format;
             return;
         }
     }
@@ -294,13 +296,14 @@ function save_image(query, object) {
             var extension = file_extension(url);
             // var dir = 'public/img/';
             var dir = 'img/';
-            var path = 'public/' + dir + query.replace(/%20/g, '').replace(' ', '') + '.' + extension;
+            var image_link = dir + query.replace(/%20/g, '').replace(/\s+/g, '') + '.' + extension;
+            var path = 'public/' + image_link
 
             image.writeTo(path, function() {
                 // console.log(object);
                 console.log('Wrote to %s from %s', path, image['url']);
-                object['image_link'] = path;
-                // console.log(object);
+                object['image_link'] = image_link;
+                console.log(object);
             });
         }
     });

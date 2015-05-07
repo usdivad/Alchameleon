@@ -124,7 +124,7 @@
 
 			// Hacky mouse moving
 			$('body').mousemove(function(event) {
-				console.log(event);
+				// console.log(event);
 				if (mouseX < 0 || mouseY < 0) {
 					mouseX = event.pageX;
 					mouseY = event.pageY;
@@ -134,7 +134,7 @@
 					var dy = event.pageY - mouseY;
 					var mult = 0.1;
 					var speed = 0.1;
-					console.log('(%d, %d)', dx, dy);
+					// console.log('(%d, %d)', dx, dy);
 
 					dx = dx*mult;
 					dy = dy*mult;
@@ -176,6 +176,10 @@
 				var protagonist = data['protagonist'];
 				// var image_link = protagonist['image_link'].replace('public/', '');
 				var image_link = 'img/' + data['query'].replace(/%20/g, '') + '.jpg'; //hacky
+				if ('image_link' in protagonist) {
+					console.log('valid protagonist image_link');
+					image_link = protagonist['image_link'];
+				}
 				var url = data['url'];
 				var html_out = '<b>You are:</b> <a href="' + url + '" "_blank">'
 				// html_out += '' + protagonist['text'] + '';
@@ -579,7 +583,7 @@
 			    for (var i = 0; i < 6; i++ ) {
 			        color += letters[Math.floor(Math.random() * 16)];
 			    }
-			    console.log(color);
+			    // console.log(color);
 			    return color;
 			}
 
@@ -639,8 +643,11 @@
 				// }
 
 				// Picture
-				var img_link = 'img/' + character['text'].replace(' ', '').replace(/%20/g, '');
-				out += '<br><img src="' + img_link + '.jpg" width="50"/>'; 
+				var img_link = 'img/' + character['text'].replace(/\s+/g, '').replace(/%20/g, '') + '.jpg';
+				if ('image_link' in character) {
+					img_link = character['image_link'];
+				}
+				out += '<br><img src="' + img_link + '" width="50"/>'; 
 
 
 				// Available actions
