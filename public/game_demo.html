@@ -175,7 +175,11 @@
 			function createProtagonistInfo(data) {
 				var protagonist = data['protagonist'];
 				// var image_link = protagonist['image_link'].replace('public/', '');
-				var image_link = 'img/' + data['query'].replace(/%20/g, '') + '.jpg'; //hacky
+
+				// Last-resort guess using query and '.jpg'
+				var image_link = 'img/' + format_query(data['query']) + '.jpg'; //hacky
+				
+				// Try to get actual image link
 				if ('image_link' in protagonist) {
 					console.log('valid protagonist image_link');
 					image_link = protagonist['image_link'];
@@ -642,9 +646,10 @@
 				// 	out += '<i>Not too familiar</i><br>';
 				// }
 
-				// Picture
-				var img_link = 'img/' + character['text'].replace(/\s+/g, '').replace(/%20/g, '') + '.jpg';
+				// Picture: try to get actual image link, if unavilable use best guess
+				var img_link = 'img/' + format_query(character['text']) + '.jpg';
 				if ('image_link' in character) {
+					console.log('character image_link!');
 					img_link = character['image_link'];
 				}
 				out += '<br><img src="' + img_link + '" width="50"/>'; 
@@ -670,6 +675,11 @@
 						console.log(e);
 						location.reload();
 				});	
+			}
+
+			// Duplicate from app.js
+			function format_query(q) {
+			    return q.replace(/(%20|\s+|\W+)/g, '');
 			}
 
 		</script>
