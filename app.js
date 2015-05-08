@@ -72,6 +72,10 @@ app.post('/collect', collect);
 //     res.send('public/img/')
 // })
 
+
+// Constants
+var DEFAULT_IMAGE_URL = 'default.jpg';
+
 /*
  * Chained functions for main method
  */
@@ -189,10 +193,10 @@ function get_images(req, res, output) {
     }
 
     // Create shallow copy
-    var images_to_save = output['people'].slice(0).reverse(); //cos max_images decrements
-    images_to_save.push(output['protagonist']);
+    var images_to_save = output['people'].slice(0);
+    images_to_save.unshift(output['protagonist']);
     var output_data = {'req': req, 'res': res, 'output': output};
-    save_image(images_to_save, max_images, to_output, output_data);
+    save_image(images_to_save, 0, max_images, to_output, output_data);
 
     // // save_image(encodeURIComponent(output['protagonist']['text']), output['protagonist']);
     // save_image(output['query'], output['protagonist']);
@@ -269,9 +273,9 @@ function extract_by_values(list, key, values) {
 }
 
 // Google image search and save to img folder
-function save_image(object_in, image_idx, final_callback, final_callback_data) {
+function save_image(object_in, image_idx, max_images, final_callback, final_callback_data) {
     // The base case
-    if (image_idx < 0) {
+    if (image_idx >= max_images) {
         console.log('bottomed out save_image()');
         final_callback(final_callback_data);
         return;
@@ -279,9 +283,12 @@ function save_image(object_in, image_idx, final_callback, final_callback_data) {
 
     // Otherwise
     // console.log(object_in);
+    // console.log('object in length: ' + object_in.length);
+    // var idx = object_in.length - image_idx;
     var object = object_in[image_idx];
+    // console.log(object);
     var query = object['text'];
-    console.log('save_image iteration #%d: %s', image_idx, query);
+    console.log('save_image iteration #%d of %d: %s', image_idx, max_images, query);
 
     //Check if file exists (how to get extension?)
     //TODO: move away from deprecated existsSync()
@@ -293,7 +300,8 @@ function save_image(object_in, image_idx, final_callback, final_callback_data) {
             console.log(query_formatted + '.' + format + ' already exists');
             // object['image_link'] = 'public/img/'+query+'.'+format;
             object['image_link'] = 'img/' + query_formatted + '.' + format;
-            save_image(object, image_idx-1, final_callback, final_callback_data);
+            save_image(object_in, image_idx+1, max_images, final_callback, final_callback_data);
+            return;
         }
     }
 
@@ -310,15 +318,23 @@ function save_image(object_in, image_idx, final_callback, final_callback_data) {
             var image_link = dir + query_formatted + '.' + extension;
             var path = 'public/' + image_link
 
-            image.writeTo(path, function() {
-                // console.log(object);
-                console.log('Wrote to %s from %s', path, image['url']);
-                object['image_link'] = image_link;
-                // console.log(object);
+            if (url == DEFAULT_IMAGE_URL) { //use default
+                object['image_link'] = dir + DEFAULT_IMAGE_URL;
+                save_image(object_in, image_idx+1, max_images, final_callback, final_callback_data);
+                return;
+            }
+            else { //write
+                image.writeTo(path, function() {
+                    // console.log(object);
+                    console.log('Wrote to %s from %s', path, image['url']);
+                    object['image_link'] = image_link;
+                    // console.log(object);
 
-                //async callback
-                save_image(object_in, image_idx-1, final_callback, final_callback_data);
-            });
+                    //async callback
+                    save_image(object_in, image_idx+1, max_images, final_callback, final_callback_data);
+                    return;
+                });
+            }
         }
     });
 }
@@ -416,14 +432,16 @@ function upper_first_char(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+// Parsing; get rid of anything after the extension
+// and also reject images without extension
 function parse_image_url(url) {
     // return url.replace(/(?<=\.(jpg|jpeg|png|gif)).*/gi, '');
     var url_arr = url.match(/.*\.(jpg|jpeg|png|gif)/gi);
-    if (url_arr.length > 0) {
+    if (url_arr && url_arr.length > 0) {
         console.log(url_arr[0]);
         return url_arr[0];
     }
-    return url;
+    return DEFAULT_IMAGE_URL;
 }
 
             // See if entities subject match; then add to the entity's 'available_actions' field
