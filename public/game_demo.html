@@ -468,26 +468,50 @@
 
 						objects.push( mesh );
 
-						
+						// Object labels as canvas objects (adapted from http://stemkoski.github.io/Three.js/Texture-From-Canvas.html)
+						var label_canvas = document.createElement('canvas');
+						var label_context = label_canvas.getContext('2d');
+						label_context.font = 'Regular 10px Helvetica';
+						label_context.fillStyle = 'rgba(0,0,0,0.75)';
+						label_context.fillText(character['text'], character['text'].length*5, 50); //need to rein in
+						var label_texture = new THREE.Texture(label_canvas);
+						label_texture.needsUpdate = true;
+						var label_material = new THREE.MeshBasicMaterial({
+							map: label_texture,
+							side: THREE.DoubleSide
+						});
+						label_material.transparent = true;
+						var label_mesh = new THREE.Mesh(
+							new THREE.PlaneGeometry(label_canvas.width, label_canvas.height),
+							label_material
+						);
+						// label_mesh.position.set(mesh.position.x, mesh.position.y, mesh.position.z);
+						label_mesh.position.x = mesh.position.x;
+						label_mesh.position.y = mesh.position.y;
+						label_mesh.position.z = mesh.position.z;
+						// console.log(label_mesh.position);
+
+						scene.add(label_mesh);
+						// objects.push(label_mesh);
 
 
 						// // Object labels (adapted from http://stackoverflow.com/a/15257807/4438760)
 						// // camera.updateMatrixWorld();
-						var text2 = document.createElement('div');
-						text2.className = 'text2';
-						text2.style.position = 'absolute';
-						//text2.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
-						text2.style.width = 200;
-						text2.style.height = 200;
-						text2.style.backgroundColor = getRandomColor();
-						text2.innerHTML = createCharacterInfo(character);
+						// var text2 = document.createElement('div');
+						// text2.className = 'text2';
+						// text2.style.position = 'absolute';
+						// //text2.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
+						// text2.style.width = 200;
+						// text2.style.height = 200;
+						// text2.style.backgroundColor = getRandomColor();
+						// text2.innerHTML = createCharacterInfo(character);
 
-						//new
-						text2.style.top = mesh.position.y*10 + 'px';
-						text2.style.left = mesh.position.x*3+800 + 'px';
+						// //new
+						// text2.style.top = mesh.position.y*10 + 'px';
+						// text2.style.left = mesh.position.x*3+800 + 'px';
 
-						text2.style.opacity = '0.75'
-						document.body.appendChild(text2);
+						// text2.style.opacity = '0.75'
+						// document.body.appendChild(text2);
 					}
 
 					//
