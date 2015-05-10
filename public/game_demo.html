@@ -436,9 +436,6 @@
 					geometry = new THREE.BoxGeometry( 20, 20, 20 );
 
 					
-
-
-
 					for ( var i = 0, l = geometry.faces.length; i < l; i ++ ) {
 
 						var face = geometry.faces[ i ];
@@ -454,7 +451,11 @@
 
 						var character = characters[i];
 
-						material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
+						// material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
+
+						var material = new THREE.MeshBasicMaterial({
+							map: THREE.ImageUtils.loadTexture(character['image_link'])
+						})
 
 						var mesh = new THREE.Mesh( geometry, material );
 						mesh.position.x = Math.floor( Math.random() * 20 - 10 ) * 20;
@@ -463,12 +464,15 @@
 						mesh.position.z = Math.floor( Math.random() * 20 - 10 ) * 20;
 						scene.add( mesh );
 
-						material.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+						// material.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
 
 						objects.push( mesh );
 
-						// Object labels (adapted from http://stackoverflow.com/a/15257807/4438760)
-						// camera.updateMatrixWorld();
+						
+
+
+						// // Object labels (adapted from http://stackoverflow.com/a/15257807/4438760)
+						// // camera.updateMatrixWorld();
 						var text2 = document.createElement('div');
 						text2.className = 'text2';
 						text2.style.position = 'absolute';
@@ -477,22 +481,6 @@
 						text2.style.height = 200;
 						text2.style.backgroundColor = getRandomColor();
 						text2.innerHTML = createCharacterInfo(character);
-
-						// var vector = new THREE.Vector3();
-						// var projector = new THREE.Projector();
-						// projector.projectVector( vector.setFromMatrixPosition(this.matrixWorld ), camera );
-
-						// vector.x = ( vector.x * widthHalf ) + widthHalf;
-						// vector.y = - ( vector.y * heightHalf ) + heightHalf;
-
-						// var textpos = toXYCoords(mesh.position, projector);
-						
-
-
-
-						//old
-						// text2.style.top = mesh.position.z*2+100 + 'px' ;
-						// text2.style.left = mesh.position.x*2+700 + 'px';
 
 						//new
 						text2.style.top = mesh.position.y*10 + 'px';
@@ -580,7 +568,6 @@
 			} //end createScene
 
 
-			//from http://stackoverflow.com/a/1484514/4438760
 			function getRandomColor() {
 			    var letters = '0123456789abcdef'.split('');
 			    var color = '#';
