@@ -77,6 +77,7 @@
 		<script src="js/three.min.js"></script>
 		<script src="js/PointerLockControls.js"></script>
 		<script src="js/Projector.js"></script>
+		<script src="js/helvetiker_regular.typeface.js"></script>
 		<script src="js/jquery-1.11.3.min.js"></script>
 		<div id="blocker">
 
@@ -455,7 +456,7 @@
 
 						var material = new THREE.MeshBasicMaterial({
 							map: THREE.ImageUtils.loadTexture(character['image_link'])
-						})
+						});
 
 						var mesh = new THREE.Mesh( geometry, material );
 						mesh.position.x = Math.floor( Math.random() * 20 - 10 ) * 20;
@@ -468,31 +469,58 @@
 
 						objects.push( mesh );
 
-						// Object labels as canvas objects (adapted from http://stemkoski.github.io/Three.js/Texture-From-Canvas.html)
-						var label_canvas = document.createElement('canvas');
-						var label_context = label_canvas.getContext('2d');
-						label_context.font = 'Regular 10px Helvetica';
-						label_context.fillStyle = 'rgba(0,0,0,0.75)';
-						label_context.fillText(character['text'], character['text'].length*5, 50); //need to rein in
-						var label_texture = new THREE.Texture(label_canvas);
-						label_texture.needsUpdate = true;
-						var label_material = new THREE.MeshBasicMaterial({
-							map: label_texture,
-							side: THREE.DoubleSide
+						// Object labels as 3D TextGeometry objects
+						var label_geom = new THREE.TextGeometry(character['text'], {
+							size: 3,
+							height: 1,
+							curveSegments: 1,
+							font: 'helvetiker',
+							weight: 'normal',
+							style: 'normal',
+							bevelEnabled: false,
+							bevelThickness: 10,
+							bevelSize: 8
 						});
-						label_material.transparent = true;
-						var label_mesh = new THREE.Mesh(
-							new THREE.PlaneGeometry(label_canvas.width, label_canvas.height),
-							label_material
-						);
-						// label_mesh.position.set(mesh.position.x, mesh.position.y, mesh.position.z);
+
+						var label_material = new THREE.MeshLambertMaterial({
+							color: new THREE.Color(Math.random(), 0, Math.random()) //THREE.Color object, not string
+						});
+						console.log(label_material);
+
+						var label_mesh = new THREE.Mesh(label_geom, label_material);
 						label_mesh.position.x = mesh.position.x;
-						label_mesh.position.y = mesh.position.y;
+						label_mesh.position.y = mesh.position.y + 15;
 						label_mesh.position.z = mesh.position.z;
-						// console.log(label_mesh.position);
+
+						// console.log(label_geom);
 
 						scene.add(label_mesh);
-						// objects.push(label_mesh);
+
+						// // Object labels as canvas objects (adapted from http://stemkoski.github.io/Three.js/Texture-From-Canvas.html)
+						// var label_canvas = document.createElement('canvas');
+						// var label_context = label_canvas.getContext('2d');
+						// label_context.font = 'Regular 10px Helvetica';
+						// label_context.fillStyle = 'rgba(0,0,0,0.75)';
+						// label_context.fillText(character['text'], character['text'].length*5, 50); //need to rein in
+						// var label_texture = new THREE.Texture(label_canvas);
+						// label_texture.needsUpdate = true;
+						// var label_material = new THREE.MeshBasicMaterial({
+						// 	map: label_texture,
+						// 	side: THREE.DoubleSide
+						// });
+						// label_material.transparent = true;
+						// var label_mesh = new THREE.Mesh(
+						// 	new THREE.PlaneGeometry(label_canvas.width, label_canvas.height),
+						// 	label_material
+						// );
+						// // label_mesh.position.set(mesh.position.x, mesh.position.y, mesh.position.z);
+						// label_mesh.position.x = mesh.position.x;
+						// label_mesh.position.y = mesh.position.y;
+						// label_mesh.position.z = mesh.position.z;
+						// // console.log(label_mesh.position);
+
+						// scene.add(label_mesh);
+						// // objects.push(label_mesh);
 
 
 						// // Object labels (adapted from http://stackoverflow.com/a/15257807/4438760)
