@@ -215,6 +215,7 @@
 				var controls;
 
 				var objects = [];
+				var transition = false;
 
 				var raycaster;
 
@@ -617,10 +618,16 @@
 
 							canJump = true;
 
-							// Post character!
+							// // Post character!
 							var character = intersections[0].object.character;
 							console.log(character['text']);
+							if (!transition) {
+								postCharacter(character['text']);
+								transition = true;
+							}
+
 							// console.log(intersections);
+							// console.log(objects);
 						}
 						// console.log(intersections);
 
