@@ -481,6 +481,8 @@
 
 						// material.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
 
+						mesh.character = character;
+
 						objects.push( mesh );
 
 						// Object labels as 3D TextGeometry objects
@@ -585,7 +587,12 @@
 
 					if ( controlsEnabled ) {
 						raycaster.ray.origin.copy( controls.getObject().position );
-						raycaster.ray.origin.y -= 10;
+						
+						// Ray origin for being on top of object
+						// raycaster.ray.origin.y -= 10;
+
+						// Ray origin for being "inside" object
+						raycaster.ray.origin.y += 20;
 
 						var intersections = raycaster.intersectObjects( objects );
 
@@ -609,7 +616,13 @@
 							velocity.y = Math.max( 0, velocity.y );
 
 							canJump = true;
+
+							// Post character!
+							var character = intersections[0].object.character;
+							console.log(character['text']);
+							// console.log(intersections);
 						}
+						// console.log(intersections);
 
 						controls.getObject().translateX( velocity.x * delta );
 						controls.getObject().translateY( velocity.y * delta );
