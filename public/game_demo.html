@@ -65,10 +65,35 @@
 				background: #000000;
 				color: #ffffff;
 				opacity: 0.7;
+				overflow: scroll;
 			}
 
 			a, a:hover, a:visited {
 				color: #ffffff;
+			}
+
+			#legend {
+				font-size: 86%;
+			}
+
+			.legend_box {
+				width: 10px;
+				height: 10px;
+				background-color: white;
+				float:left;
+				margin-right: 3px;
+			}
+
+			#lb_positive {
+				background-color: green;
+			}
+
+			#lb_neutral {
+				background-color: yellow;
+			}
+
+			#lb_negative {
+				background-color: red;
 			}
 
 		</style>
@@ -96,9 +121,17 @@
                 <br><br><br>
 				<div id="characterInfo"><img src="img/default.jpg" height="150"/></div>
 				<div id="objectives"></div>
-				<br>
+				<br><br>
 				<div id="location"></div>
-
+				<br><br>
+				<div id="legend">
+					<div class="legend_box" id="lb_positive"></div> = One of my closest allies
+					<br>
+					<div class="legend_box" id="lb_neutral"></div> = A decent friend
+					<br>
+					<div class="legend_box" id="lb_negative"></div> = Occasional dinner enemy
+					<br>
+				</div>
 			</div>
 
 		</div>
@@ -198,14 +231,14 @@
 			function createNewObjective(data) {
 				var objectives = data['protagonist']['actions'];
 				var idx = Math.floor(Math.random() * objectives.length);
-				$("#objectives").html('<br><b>Your objective:</b> ' + objectives[idx]);
+				$("#objectives").html('<br><b>Your objective (click to refresh):</b><br>' + objectives[idx]);
 
 			}
 
 			function createLocation(data) {
 				var locations = data['places'];
 				var idx = Math.floor(Math.random()*locations.length);
-				$("#location").text('Welcome to ' + locations[idx]['text'] + '!');
+				$("#location").html('Welcome to <b>' + locations[idx]['text'] + '</b>!');
 			}
 
 			function createScene(data) {
