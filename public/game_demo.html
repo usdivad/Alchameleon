@@ -58,8 +58,8 @@
 			#hud {
 				position: fixed;
 				padding: 10px;
-				width: 3000px;
-				height: 520px;
+				width: 200px;
+				height: 1000px;
 				top: 0px;
 				left: 0px;
 				background: #000000;
@@ -268,6 +268,10 @@
 					document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
 
 					instructions.addEventListener( 'click', function ( event ) {
+					// document.addEventListener('keyup', function ( event ) {
+					// 	if (event.keyCode == 27) {
+					// 		return;
+					// 	}
 
 						instructions.style.display = 'none';
 
@@ -451,12 +455,22 @@
 					for ( var i = 0; i < characters.length; i ++ ) {
 
 						var character = characters[i];
+						console.log(character);
 
 						// material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 
+						var image_link = character['image_link'];
+						// if (!image_link) {
+						// 	image_link = 'img/' + character['text'].replace(/[\s\W]/g, '');
+						// }
+						if (!image_link) {
+							image_link = 'img/default.jpg';
+						}
+
 						var material = new THREE.MeshBasicMaterial({
-							map: THREE.ImageUtils.loadTexture(character['image_link'])
+							map: THREE.ImageUtils.loadTexture(image_link)
 						});
+						// console.log(image_link);
 
 						var mesh = new THREE.Mesh( geometry, material );
 						mesh.position.x = Math.floor( Math.random() * 20 - 10 ) * 20;
@@ -485,7 +499,7 @@
 						var label_material = new THREE.MeshLambertMaterial({
 							color: new THREE.Color(Math.random(), 0, Math.random()) //THREE.Color object, not string
 						});
-						console.log(label_material);
+						// console.log(label_material);
 
 						var label_mesh = new THREE.Mesh(label_geom, label_material);
 						label_mesh.position.x = mesh.position.x;
